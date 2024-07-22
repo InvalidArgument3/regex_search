@@ -1,5 +1,6 @@
 package net.natte.re_search.search;
 
+import com.google.common.base.Predicates;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Item;
@@ -15,45 +16,52 @@ public class Filter {
 
     private final SearchOptions searchOptions;
     private final ServerPlayer player;
-    private Predicate<ItemStack> predicate;
+    private final Predicate<ItemStack> predicate;
 
     public Filter(SearchOptions searchOptions, ServerPlayer player) {
         this.searchOptions = searchOptions;
         this.player = player;
-        this.predicate = itemStack -> !itemStack.is(Items.AIR);
+//        this.predicate = itemStack -> !itemStack.isEmpty();
 
-        parseFilterExpression();
+        this.predicate = parseFilterExpression();
     }
 
-    private void parseFilterExpression() {
-        if (searchOptions.searchMode() == SearchMode.REGEX) { // TODO: make regex -> extended+regex
-            Pattern pattern = Pattern.compile(searchOptions.expression(),
-                    searchOptions.isCaseSensitive() ? 0 : Pattern.CASE_INSENSITIVE);
+    private Predicate<ItemStack> parseFilterExpression() {
+        switch (searchOptions.searchMode()) {
+            case REGEX -> {
+                // TODO: make regex -> extended+regex
+                Pattern pattern = Pattern.compile(searchOptions.expression(),
+                        searchOptions.isCaseSensitive() ? 0 : Pattern.CASE_INSENSITIVE);
 
-            add(itemStack -> {
-                String name = itemStack.getItem().getDescription().getString();
-                return pattern.matcher(name).find();
-            });
+                return itemStack -> {
+                    String name = itemStack.getItem().getDescription().getString();
+                    return pattern.matcher(name).find();
+                };
+            }
 
-        } else if (searchOptions.searchMode() == SearchMode.LITERAL) {
-            String string = searchOptions.expression();
-            Predicate<String> predicate = StringMatcher.overCaseFold((a, b) -> b.contains(a),
-                    this.searchOptions.isCaseSensitive(), string);
-            Predicate<ItemStack> p = name(predicate);
-            p = p.or(mod(predicate));
-            p = p.or(id(predicate));
-            p = p.or(tag(predicate));
-            p = p.or(tooltip(predicate));
-            add(p);
-        }
-        if (searchOptions.searchMode() == SearchMode.EXTENDED) {
-            String[] words = searchOptions.expression().split(" ");
-            for (String word : words) {
-                if (word.isEmpty())
-                    continue;
-                add(parseWord(word));
+            case LITERAL -> {
+                String string = searchOptions.expression();
+                Predicate<String> predicate = StringMatcher.overCaseFold((a, b) -> b.contains(a),
+                        this.searchOptions.isCaseSensitive(), string);
+                Predicate<ItemStack> p = name(predicate);
+                p = p.or(mod(predicate));
+                p = p.or(id(predicate));
+                p = p.or(tag(predicate));
+                p = p.or(tooltip(predicate));
+                return p;
+            }
+            case EXTENDED -> {
+                String[] words = searchOptions.expression().split(" ");
+                Predicate<ItemStack> p = Predicates.alwaysTrue();
+                for (String word : words) {
+                    if (word.isEmpty())
+                        continue;
+                    p = p.and(parseWord(word));
+                }
+                return p;
             }
         }
+        return null;
     }
 
     private Predicate<ItemStack> parseWord(String word) {
@@ -86,10 +94,6 @@ public class Filter {
 
     public boolean test(ItemStack itemStack) {
         return this.predicate.test(itemStack);
-    }
-
-    private void add(Predicate<ItemStack> predicate) {
-        this.predicate = this.predicate.and(predicate);
     }
 
     public Predicate<ItemStack> mod(Predicate<String> predicate) {

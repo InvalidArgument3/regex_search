@@ -18,8 +18,6 @@ public interface CycleableOption<E extends Enum<E>> {
 
     E next();
 
-    E value();
-
     CycleableOption<E> withState(E state);
 
     default Tooltip getTooltip() {
@@ -27,7 +25,7 @@ public interface CycleableOption<E extends Enum<E>> {
     }
 
     static <E extends Enum<E>> CycleableOption<E> create(String category, Class<E> enumClass, int vOffset) {
-        return new OptionWithState<E>(category, enumClass, 20, 20, 0, vOffset);
+        return new OptionWithState<>(category, enumClass, 20, 20, 0, vOffset);
     }
 
     class OptionWithState<E extends Enum<E>> implements CycleableOption<E> {
@@ -83,8 +81,7 @@ public interface CycleableOption<E extends Enum<E>> {
             return value();
         }
 
-        @Override
-        public E value() {
+        private E value() {
             return enumClass.getEnumConstants()[state];
         }
 

@@ -67,20 +67,17 @@ public class SearchScreen extends Screen {
         searchBox.setFormatter(highlighter::provideRenderText);
         searchBox.setResponder(highlighter::refresh);
 
-        this.addRenderableWidget(new TexturedCyclingButtonWidget<>(
-                caseSensitivity.withState(ClientSettings.isCaseSensitive ? CaseSensitivity.SENSITIVE : CaseSensitivity.INSENSITIVE),
-                centerX - 61, centerY + 71, 20, 20, WIDGET_TEXTURE, this::onCaseSensitiveButtonPress));
+        this.addRenderableWidget(
+                new TexturedCyclingButtonWidget<>(caseSensitivity.withState(ClientSettings.isCaseSensitive ? CaseSensitivity.SENSITIVE : CaseSensitivity.INSENSITIVE), centerX - 61, centerY + 71, WIDGET_TEXTURE, this::onCaseSensitiveButtonPress));
 
         this.addRenderableWidget(
-                new TexturedCyclingButtonWidget<>(keepMode.withState(ClientSettings.keepMode), centerX - 27, centerY + 71, 20,
-                        20, WIDGET_TEXTURE, this::onKeepModeButtonPress));
+                new TexturedCyclingButtonWidget<>(keepMode.withState(ClientSettings.keepMode), centerX - 27, centerY + 71, WIDGET_TEXTURE, this::onKeepModeButtonPress));
 
         this.addRenderableWidget(
-                new TexturedCyclingButtonWidget<>(SearchContext.withState(ClientSettings.searchContext), centerX + 7, centerY + 71, 20,
-                        20, WIDGET_TEXTURE, this::onSearchTypeButtonPress));
+                new TexturedCyclingButtonWidget<>(SearchContext.withState(ClientSettings.searchContext), centerX + 7, centerY + 71, WIDGET_TEXTURE, this::onSearchTypeButtonPress));
 
         this.addRenderableWidget(new TexturedCyclingButtonWidget<>(searchMode.withState(ClientSettings.searchMode),
-                centerX + 41, centerY + 71, 20, 20, WIDGET_TEXTURE, this::onSearchModeButtonPress));
+                centerX + 41, centerY + 71, WIDGET_TEXTURE, this::onSearchModeButtonPress));
 
         ClientSettings.searchHistory.resetPosition();
         if (ClientSettings.keepMode != KeepMode.CLEAR) {
@@ -98,8 +95,7 @@ public class SearchScreen extends Screen {
 
             String text = searchBox.getValue();
             if (text.isEmpty()) {
-                HighlightRenderer.clearMarkedInventories();
-                HighlightRenderer.setRenderedItems(new ArrayList<>());
+                HighlightRenderer.clear();
             } else {
                 PacketDistributor.sendToServer(new ItemSearchPacketC2S(new SearchOptions(text, ClientSettings.isCaseSensitive, ClientSettings.searchMode,
                         ClientSettings.searchContext)));

@@ -6,12 +6,10 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.ContainerEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.natte.re_search.config.Config;
 import net.neoforged.neoforge.capabilities.Capabilities;
@@ -23,56 +21,78 @@ import java.util.List;
 
 public class Searcher {
 
-    private static int totalItems;
+    private int totalItems;
 
-    public static List<MarkedInventory> search(SearchOptions searchOptions, ServerPlayer playerEntity) {
+    private final SearchOptions searchOptions;
+    private final ServerPlayer player;
+    private final Filter filter;
 
-        List<MarkedInventory> inventories = new ArrayList<>();
-        totalItems = 0;
+    private final int range;
+    private final boolean doSearchBlocks;
+    private final boolean doSearchEntities;
 
-        Player player = playerEntity;
-        Level world = player.level();
+    private final List<MarkedInventory> resultInventories;
 
-        Filter filter = new Filter(searchOptions, playerEntity);
-        int range = Config.range;
-        if (Config.searchBlocks) {
-            for (BlockPos blockPos : BlockPos.withinManhattan(player.blockPosition(), range, range, range)) {
-                if (inventories.size() == Config.maxInventories)
-                    break;
-                MarkedInventory markedInventory = new MarkedInventory(blockPos.immutable());
-                search(blockPos, world, filter, markedInventory, Config.recursionLimit);
 
-                if (!markedInventory.isEmpty()) {
-                    inventories.add(markedInventory);
-                }
+    private Searcher(SearchOptions searchOptions, ServerPlayer player) {
+        this.searchOptions = searchOptions;
+        this.player = player;
+        this.filter = new Filter(searchOptions, player);
 
-            }
-        }
+        this.range = Config.range;
+        this.doSearchBlocks = Config.searchBlocks && searchOptions.searchContext().doesSearchBlocks();
+        this.doSearchEntities = Config.searchEntities && searchOptions.searchContext().doesSearchEntities();
 
-        if (Config.searchEntities) {
-            List<Entity> entities = world.getEntities(player,
-                    AABB.ofSize(player.position(), range * 2, range * 2, range * 2));
-
-            entities.sort(Comparator.comparing(entity -> entity.distanceToSqr(player)));
-
-            for (Entity entity : entities) {
-                if (inventories.size() == Config.maxInventories)
-                    break;
-
-                MarkedInventory markedInventory = new MarkedInventory(entity.blockPosition());
-                search(entity, filter, markedInventory, Config.recursionLimit);
-
-                if (!markedInventory.isEmpty()) {
-                    inventories.add(markedInventory);
-                }
-            }
-        }
-
-        return inventories;
+        resultInventories = new ArrayList<>();
     }
 
-    private static boolean search(ItemStack itemStack, Filter predicate, MarkedInventory markedInventory,
-                                  int recursionDepth) {
+    public static List<MarkedInventory> search(SearchOptions searchOptions, ServerPlayer playerEntity) {
+        return new Searcher(searchOptions, playerEntity).search();
+    }
+
+    private List<MarkedInventory> search() {
+
+        totalItems = 0;
+
+        if (doSearchBlocks)
+            searchBlocks(player.level());
+
+        if (doSearchEntities)
+            searchEntities(player.level());
+
+        return resultInventories;
+    }
+
+    private void searchBlocks(Level level) {
+        for (BlockPos blockPos : BlockPos.withinManhattan(player.blockPosition(), range, range, range)) {
+            if (resultInventories.size() == Config.maxInventories)
+                break;
+
+            MarkedInventory markedInventory = searchBlock(blockPos, level, Config.recursionLimit);
+
+            if (!markedInventory.isEmpty())
+                resultInventories.add(markedInventory);
+        }
+    }
+
+    private void searchEntities(Level level) {
+        List<Entity> entities = level.getEntities(player,
+                AABB.ofSize(player.position(), range * 2, range * 2, range * 2));
+
+        entities.sort(Comparator.comparing(entity -> entity.distanceToSqr(player)));
+
+        for (Entity entity : entities) {
+            if (resultInventories.size() == Config.maxInventories)
+                break;
+
+            MarkedInventory markedInventory = searchEntity(entity, Config.recursionLimit);
+
+            if (!markedInventory.isEmpty())
+                resultInventories.add(markedInventory);
+        }
+    }
+
+    private boolean searchItem(ItemStack itemStack, MarkedInventory markedInventory, int recursionDepth) {
         if (itemStack.isEmpty())
             return false;
 
@@ -85,7 +105,7 @@ public class Searcher {
             return false;
 
         boolean foundAny = false;
-        boolean itemStackMatches = predicate.test(itemStack);
+        boolean itemStackMatches = filter.test(itemStack);
         if (itemStackMatches) {
             markedInventory.inventory().add(itemStack);
             ++totalItems;
@@ -95,7 +115,7 @@ public class Searcher {
         if (itemHandler != null) {
             int items = itemHandler.getSlots();
             for (int i = 0; i < items; ++i) {
-                if (search(itemHandler.getStackInSlot(i), predicate, markedInventory, recursionDepth - 1))
+                if (searchItem(itemHandler.getStackInSlot(i), markedInventory, recursionDepth - 1))
                     foundAny = true;
             }
         }
@@ -108,82 +128,78 @@ public class Searcher {
         return foundAny;
     }
 
-    private static boolean search(BlockPos blockPos, Level world, Filter predicate,
-                                  MarkedInventory markedInventory, int recursionDepth) {
+    private MarkedInventory searchBlock(BlockPos blockPos, Level world, int recursionDepth) {
+
+        MarkedInventory markedInventory = new MarkedInventory(blockPos.immutable());
+
         if (recursionDepth == 0)
-            return false;
+            return markedInventory;
 
         boolean foundAny = false;
-
-        BlockState blockState = world.getBlockState(blockPos);
 
         IItemHandler itemHandler = world.getCapability(Capabilities.ItemHandler.BLOCK, blockPos, null);
         if (itemHandler != null) {
             int items = itemHandler.getSlots();
             for (int i = 0; i < items; ++i) {
-                if (search(itemHandler.getStackInSlot(i), predicate, markedInventory, recursionDepth - 1))
+                if (searchItem(itemHandler.getStackInSlot(i), markedInventory, recursionDepth - 1))
                     foundAny = true;
             }
         }
 
         if (foundAny)
-            markedInventory.addContainer(blockState.getBlock().asItem().getDefaultInstance());
+            markedInventory.addContainer(world.getBlockState(blockPos).getBlock().asItem().getDefaultInstance());
 
-        return foundAny;
+        return markedInventory;
     }
 
-    private static boolean search(Entity entity, Filter predicate, MarkedInventory markedInventory,
-                                  int recursionDepth) {
+    private MarkedInventory searchEntity(Entity entity, int recursionDepth) {
+
+        MarkedInventory markedInventory = new MarkedInventory(entity.blockPosition());
+
         if (recursionDepth == 0)
-            return false;
+            return markedInventory;
+
         boolean foundAny = false;
 
-        // item entity
-        if (entity instanceof ItemEntity itemEntity) {
+        switch (entity) {
+            case ItemEntity itemEntity -> {
+                searchItem(itemEntity.getItem(), markedInventory, recursionDepth - 1);
+            }
+            case ItemFrame itemFrame -> {
+                if (searchItem(itemFrame.getItem(), markedInventory, recursionDepth - 1))
+                    markedInventory.addContainer(Items.ITEM_FRAME.getDefaultInstance());
 
-            if (search(itemEntity.getItem(), predicate, markedInventory, recursionDepth - 1)) {
-                foundAny = true;
             }
-        }
-
-        // item frame
-        if (entity instanceof ItemFrame itemFrame) {
-            if (search(itemFrame.getItem(), predicate, markedInventory, recursionDepth - 1)) {
-                foundAny = true;
-                markedInventory.addContainer(Items.ITEM_FRAME.getDefaultInstance());
-            }
-        }
-
-        // armor stand
-        else if (entity instanceof ArmorStand armorStand) {
-            for (ItemStack itemStack : armorStand.getHandSlots()) {
-                if (search(itemStack, predicate, markedInventory, recursionDepth - 1))
-                    foundAny = true;
-            }
-            for (ItemStack itemStack : armorStand.getArmorSlots()) {
-                if (search(itemStack, predicate, markedInventory, recursionDepth - 1))
-                    foundAny = true;
-            }
-            if (foundAny) {
-                markedInventory.addContainer(Items.ARMOR_STAND.getDefaultInstance());
-            }
-        } else if (entity instanceof ContainerEntity vehicleInventory) {
-            for (ItemStack itemStack : vehicleInventory.getItemStacks()) {
-                if (search(itemStack, predicate, markedInventory, recursionDepth - 1))
-                    foundAny = true;
-            }
-            if (foundAny)
-                markedInventory.addContainer(entity.getPickResult());
-        } else {
-            IItemHandler itemHandler = entity.getCapability(Capabilities.ItemHandler.ENTITY);
-            if (itemHandler != null) {
-                int items = itemHandler.getSlots();
-                for (int i = 0; i < items; ++i) {
-                    if (search(itemHandler.getStackInSlot(i), predicate, markedInventory, recursionDepth - 1))
+            case ArmorStand armorStand -> {
+                for (ItemStack itemStack : armorStand.getHandSlots()) {
+                    if (searchItem(itemStack, markedInventory, recursionDepth - 1))
                         foundAny = true;
+                }
+                for (ItemStack itemStack : armorStand.getArmorSlots()) {
+                    if (searchItem(itemStack, markedInventory, recursionDepth - 1))
+                        foundAny = true;
+                }
+                if (foundAny)
+                    markedInventory.addContainer(Items.ARMOR_STAND.getDefaultInstance());
+            }
+            case ContainerEntity containerEntity -> {
+                for (ItemStack itemStack : containerEntity.getItemStacks()) {
+                    if (searchItem(itemStack, markedInventory, recursionDepth - 1))
+                        foundAny = true;
+                }
+                if (foundAny)
+                    markedInventory.addContainer(entity.getPickResult());
+            }
+            default -> {
+                IItemHandler itemHandler = entity.getCapability(Capabilities.ItemHandler.ENTITY);
+                if (itemHandler != null) {
+                    int items = itemHandler.getSlots();
+                    for (int i = 0; i < items; ++i) {
+                        searchItem(itemHandler.getStackInSlot(i), markedInventory, recursionDepth - 1);
+                    }
                 }
             }
         }
-        return foundAny;
+        return markedInventory;
     }
 }

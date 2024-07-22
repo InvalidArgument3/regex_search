@@ -12,21 +12,16 @@ public class StringMatcher {
     }
 
     private static BiPredicate<String, String> parseBoundaries(String string) {
-        if(string.isEmpty()){
+        if (string.isEmpty()) {
             return (filterString, itemString) -> itemString.contains(filterString);
         }
         boolean matchStart = string.charAt(0) == '^';
         boolean matchEnd = string.charAt(string.length() - 1) == '$';
-        
-        if (matchStart && matchEnd)
-            return (filterString, itemString) -> itemString.equals(filterString);
-        else if (matchStart && !matchEnd)
-            return (filterString, itemString) -> itemString.startsWith(filterString);
-        else if (!matchStart && matchEnd)
-            return (filterString, itemString) -> itemString.endsWith(filterString);
-        else
-            return (filterString, itemString) -> itemString.contains(filterString);
 
+        if (matchStart)
+            return matchEnd ? String::equals : String::startsWith;
+        else
+            return matchEnd ? String::endsWith : String::contains;
     }
 
     public static String trimBoundary(String string) {
@@ -38,7 +33,7 @@ public class StringMatcher {
     }
 
     public static Predicate<String> overCaseFold(BiPredicate<String, String> function, boolean isCaseSensitive,
-            String string) {
+                                                 String string) {
         if (isCaseSensitive)
             return a -> function.test(string, a);
         else {

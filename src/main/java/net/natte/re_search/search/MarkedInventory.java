@@ -1,8 +1,6 @@
 package net.natte.re_search.search;
 
-import io.netty.buffer.ByteBuf;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
@@ -24,10 +22,6 @@ public record MarkedInventory(BlockPos blockPos, List<ItemStack> inventory, List
 
     public MarkedInventory(BlockPos blockPos){
         this(blockPos, new ArrayList<>(), new ArrayList<>());
-    }
-
-    public void addItem(ItemStack itemStack){
-        this.inventory.add(itemStack);
     }
 
     public void addContainer(ItemStack itemStack){

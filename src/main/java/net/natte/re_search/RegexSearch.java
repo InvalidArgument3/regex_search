@@ -31,13 +31,12 @@ public class RegexSearch {
     public static final String MOD_ID = "re_search";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-
-
     public RegexSearch(IEventBus modBus, ModContainer modContainer) {
 
         modBus.addListener(this::registerPackets);
         NeoForge.EVENT_BUS.addListener(this::registerCommands);
 
+        // TODO: server/common config
 //        modContainer.registerConfig(ModConfig.Type.COMMON, NConfig.SPEC);
     }
 

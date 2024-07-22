@@ -12,7 +12,10 @@ import net.natte.re_search.network.ItemSearchPacketC2S;
 import net.natte.re_search.network.ItemSearchResultPacketS2C;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.ModLoadingContext;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ConfigTracker;
+import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
@@ -36,35 +39,23 @@ public class RegexSearch {
         modBus.addListener(this::registerPackets);
         NeoForge.EVENT_BUS.addListener(this::registerCommands);
 
-        // TODO: server/common config
-//        modContainer.registerConfig(ModConfig.Type.COMMON, NConfig.SPEC);
+        modContainer.registerConfig(ModConfig.Type.SERVER, Config.SPEC);
+        modBus.addListener(Config::onLoad);
+        modBus.addListener(Config::onReload);
+        modBus.addListener(Config::onUnLoad);
     }
-
 
     private void registerPackets(RegisterPayloadHandlersEvent event) {
         PayloadRegistrar registrar = event.registrar(MOD_ID);
         registrar.playToServer(ItemSearchPacketC2S.TYPE, ItemSearchPacketC2S.STREAM_CODEC, ItemSearchPacketC2S::receive);
         registrar.playToClient(ItemSearchResultPacketS2C.TYPE, ItemSearchResultPacketS2C.STREAM_CODEC, ItemSearchResultPacketS2C::receive);
-
     }
 
     private void registerCommands(RegisterCommandsEvent event) {
         event.getDispatcher().register(
                 Commands.literal(MOD_ID)
-                        .then(reloadConfigCommand("reload"))
                         .then(showConfigCommand("info")));
 
-    }
-
-    private static LiteralArgumentBuilder<CommandSourceStack> reloadConfigCommand(String command) {
-        return Commands.literal(command).requires(source -> source.hasPermission(2))
-                .executes(context -> {
-//                    Config.read();
-                    // TODO: reload server/common config
-                    context.getSource()
-                            .sendSystemMessage(Component.translatable("config.re_search.reloaded"));
-                    return Command.SINGLE_SUCCESS;
-                });
     }
 
     private static LiteralArgumentBuilder<CommandSourceStack> showConfigCommand(String command) {

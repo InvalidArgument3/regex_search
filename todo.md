@@ -4,7 +4,7 @@
 - [x] create logo
 
 - regex in extended search mode
-- highlight slots in invenories
+- highlight slots in inventories
 - highlight follow entity
 
 - search mode:

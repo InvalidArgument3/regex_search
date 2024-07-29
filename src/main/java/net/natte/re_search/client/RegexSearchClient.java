@@ -8,16 +8,19 @@ import net.natte.re_search.client.render.HighlightRenderer;
 import net.natte.re_search.client.screen.SearchScreen;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.bus.api.Event;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.RenderGuiEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.neoforge.client.settings.KeyConflictContext;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.GameShuttingDownEvent;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,9 +44,19 @@ public class RegexSearchClient {
         NeoForge.EVENT_BUS.addListener(this::onLevelRender);
         NeoForge.EVENT_BUS.addListener(this::onHudRender);
 
+        NeoForge.EVENT_BUS.addListener(this::saveSettingsOnShutDown);
+
         modContainer.registerConfig(ModConfig.Type.CLIENT, ClientConfig.SPEC);
         modBus.addListener(ClientConfig::onLoad);
-        modBus.addListener(ClientConfig::onUnLoad);
+        modBus.addListener(this::onClientSetup);
+    }
+
+    private void onClientSetup(FMLClientSetupEvent event) {
+        ClientSettings.load();
+    }
+
+    private void saveSettingsOnShutDown(GameShuttingDownEvent event) {
+        ClientSettings.save();
     }
 
     private void onLevelRender(RenderLevelStageEvent event) {

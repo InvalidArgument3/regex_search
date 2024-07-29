@@ -1,21 +1,22 @@
 package net.natte.re_search;
 
 import com.mojang.brigadier.Command;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.natte.re_search.client.ClientConfig;
 import net.natte.re_search.config.Config;
 import net.natte.re_search.network.ItemSearchPacketC2S;
 import net.natte.re_search.network.ItemSearchResultPacketS2C;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.ModLoadingContext;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.config.ConfigTracker;
 import net.neoforged.fml.config.ModConfig;
+import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.neoforge.client.gui.ConfigurationScreen;
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
@@ -40,9 +41,8 @@ public class RegexSearch {
         NeoForge.EVENT_BUS.addListener(this::registerCommands);
 
         modContainer.registerConfig(ModConfig.Type.SERVER, Config.SPEC);
+        modContainer.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
         modBus.addListener(Config::onLoad);
-        modBus.addListener(Config::onReload);
-        modBus.addListener(Config::onUnLoad);
     }
 
     private void registerPackets(RegisterPayloadHandlersEvent event) {
@@ -54,12 +54,8 @@ public class RegexSearch {
     private void registerCommands(RegisterCommandsEvent event) {
         event.getDispatcher().register(
                 Commands.literal(MOD_ID)
-                        .then(showConfigCommand("info")));
-
-    }
-
-    private static LiteralArgumentBuilder<CommandSourceStack> showConfigCommand(String command) {
-        return Commands.literal(command).executes(RegexSearch::showConfig);
+                        .then(Commands.literal("info")
+                                .executes(RegexSearch::showConfig)));
     }
 
     private static int showConfig(CommandContext<CommandSourceStack> context) {

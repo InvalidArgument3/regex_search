@@ -1,7 +1,6 @@
 package net.natte.re_search.config;
 
-import net.natte.re_search.RegexSearch;
-import net.neoforged.bus.api.Event;
+import net.natte.re_search.search.context.SearchContext;
 import net.neoforged.fml.event.config.ModConfigEvent;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
@@ -14,8 +13,7 @@ public class Config {
     public static int maxSearchResults = -1;
     public static int maxSearchResultsPerInventory = 81;
 
-    public static boolean searchBlocks = true;
-    public static boolean searchEntities = true;
+    public static SearchContext searchContext = SearchContext.BLOCKS_AND_ENTITIES;
 
 
     private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
@@ -28,22 +26,14 @@ public class Config {
     private static final ModConfigSpec.IntValue MAX_SEARCH_RESULTS = BUILDER.defineInRange("maxSearchResults", -1, -1, Integer.MAX_VALUE);
     private static final ModConfigSpec.IntValue MAX_SEARCH_RESULTS_PER_INVENTORY = BUILDER.defineInRange("maxSearchResultsPerInventory", 81, -1, Integer.MAX_VALUE);
 
-    private static final ModConfigSpec.BooleanValue DO_SEARCH_BLOCKS = BUILDER.define("doSearchBlocks", true);
-    private static final ModConfigSpec.BooleanValue DO_SEARCH_ENTITIES = BUILDER.define("doSearchEntities", true);
+    private static final ModConfigSpec.ConfigValue<SearchContext> SEARCH_CONTEXT = BUILDER.defineEnum("searchContext", SearchContext.BLOCKS_AND_ENTITIES);
+
 
     public static final ModConfigSpec SPEC = BUILDER.build();
 
-
-    public static void onLoad(ModConfigEvent.Loading event) {
-        loadConfig();
-    }
-
-    public static void onReload(ModConfigEvent.Reloading event) {
-        loadConfig();
-    }
-
-    public static void onUnLoad(ModConfigEvent.Unloading event) {
-        saveConfig();
+    public static void onLoad(ModConfigEvent event) {
+        if (event.getConfig().getSpec() == SPEC && !(event instanceof ModConfigEvent.Unloading))
+            loadConfig();
     }
 
     public static void loadConfig() {
@@ -54,19 +44,6 @@ public class Config {
         maxSearchResults = MAX_SEARCH_RESULTS.get();
         maxSearchResultsPerInventory = MAX_SEARCH_RESULTS_PER_INVENTORY.get();
 
-        searchBlocks = DO_SEARCH_BLOCKS.get();
-        searchEntities = DO_SEARCH_ENTITIES.get();
-    }
-
-    public static void saveConfig() {
-        RANGE.set(range);
-        RECURSION_LIMIT.set(recursionLimit);
-
-        MAX_INVENTORIES.set(maxInventories);
-        MAX_SEARCH_RESULTS.set(maxSearchResults);
-        MAX_SEARCH_RESULTS_PER_INVENTORY.set(maxSearchResultsPerInventory);
-
-        DO_SEARCH_BLOCKS.set(searchBlocks);
-        DO_SEARCH_ENTITIES.set(searchEntities);
+        searchContext = SEARCH_CONTEXT.get();
     }
 }

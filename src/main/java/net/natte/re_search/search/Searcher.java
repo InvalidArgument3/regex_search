@@ -40,8 +40,8 @@ public class Searcher {
         this.filter = new Filter(searchOptions, player);
 
         this.range = Config.range;
-        this.doSearchBlocks = Config.searchBlocks && searchOptions.searchContext().doesSearchBlocks();
-        this.doSearchEntities = Config.searchEntities && searchOptions.searchContext().doesSearchEntities();
+        this.doSearchBlocks = Config.searchContext.doesSearchBlocks() && searchOptions.searchContext().doesSearchBlocks();
+        this.doSearchEntities = Config.searchContext.doesSearchEntities() && searchOptions.searchContext().doesSearchEntities();
 
         resultInventories = new ArrayList<>();
     }

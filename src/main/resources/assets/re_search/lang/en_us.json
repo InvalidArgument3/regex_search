@@ -43,5 +43,25 @@
     "description.re_search.keep_mode.keep_highlight": "Remember last search and select it",
     
 
-    "config.re_search.reloaded": "Reloaded config"
+    "config.re_search.reloaded": "Reloaded config",
+
+
+
+    "clientconfig.re_search.auto_hide_time": "Auto Hide Time",
+    "clientconfig.re_search.auto_hide_time.tooltip": "How many seconds found items are rendered, -1 for no limit. (search \"\" to stop rendering)",
+
+
+    "re_search.configuration.maxSearchResultsPerInventory": "Max Search Results Per Inventory",
+
+    "re_search.configuration.searchContext": "Search Blocks And Entities",
+    "re_search.configuration.searchContext.tooltip": "Whether to Search Blocks, Entities or Both.",
+
+    "re_search.configuration.range": "Search Range",
+    "re_search.configuration.range.tooltip": "Search Range in Blocks",
+
+    "re_search.configuration.maxInventories": "Max Result Inventories",
+
+    "re_search.configuration.maxSearchResults": "Max Search Results",
+
+    "re_search.configuration.recursionLimit": "Recursion Limit"
 }

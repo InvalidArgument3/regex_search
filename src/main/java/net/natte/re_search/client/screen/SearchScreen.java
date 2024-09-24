@@ -1,6 +1,7 @@
 package net.natte.re_search.client.screen;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -10,6 +11,7 @@ import net.natte.re_search.client.ClientSettings;
 import net.natte.re_search.client.KeepMode;
 import net.natte.re_search.client.render.HighlightRenderer;
 import net.natte.re_search.network.ItemSearchPacketC2S;
+import net.natte.re_search.query.Word;
 import net.natte.re_search.search.SearchOptions;
 import net.natte.re_search.search.context.CaseSensitivity;
 import net.natte.re_search.search.context.SearchContext;
@@ -48,8 +50,8 @@ public class SearchScreen extends Screen {
     @Override
     protected void init() {
 
-        int boxWidth = 120;
-        int boxHeight = 18;
+        int boxWidth = 200;
+        int boxHeight = 20;
         int x = width / 2 - boxWidth / 2;
         int y = height / 2 - boxHeight / 2 + 50;
 
@@ -87,6 +89,21 @@ public class SearchScreen extends Screen {
                 searchBox.setHighlightPos(0);
             }
         }
+    }
+
+    @Override
+    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        super.render(guiGraphics, mouseX, mouseY, partialTick);
+        int i = 0;
+        for(String token : highlighter.tokens) {
+            guiGraphics.drawString(font, token, width / 2 + 100, height / 3 + i++ * 15, 0xffffff);
+        }
+
+        i = 0;
+        for(Word word : highlighter.words) {
+            guiGraphics.drawString(font, word.toComponent(), width / 2 - 300, height / 3 + i++ * 15, 0xffffff);
+        }
+
     }
 
     @Override

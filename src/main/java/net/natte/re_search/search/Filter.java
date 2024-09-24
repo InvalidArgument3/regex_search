@@ -5,9 +5,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
-import net.natte.re_search.search.context.SearchMode;
 
 import java.util.function.Predicate;
 import java.util.regex.Pattern;

@@ -1,9 +1,9 @@
 package net.natte.re_search.search.context;
 
 public enum SearchContext {
+    BLOCKS_AND_ENTITIES,
     BLOCKS,
-    ENTITIES,
-    BLOCKS_AND_ENTITIES;
+    ENTITIES;
 
     public boolean doesSearchBlocks() {
         return this != ENTITIES;

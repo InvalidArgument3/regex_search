@@ -1,0 +1,7 @@
+ModName
+@mod:item
+@ModName:item
+@"ModName With spaces":item
+@"ModName With spaces:item"
+-@mod:item
+https://tio.run/##TVHRjpswEHyOv2JZkHxwl9DnU0Ko1Nd@ARDFwIZYAUPBEYkI9@upCfTUJ3tmZ8e74/aa3p/Ptocd@Ie3/VZRITQFkbVO9q7BTUsneQui0PHsiTHUn2s9KZAfYz@ZNFmtNCkdbDwjiC@LwH38V4oOkLy7Lng@Y515qyDdMSZ2UcJSKqRiq7QlcYGrKqnrwEi@oO3ZSsB2C84XW01NDmekcqPRsoRuQ1Wj73s2T0iTYGArDBF2AWBV5/hhoDdDOSN7RloUL@gssK5LLZsXNTNKVIRsZM1Vd4B0E1VT0ieExhU8mYNtHMBZ@mA9hwbWcvJXADmHGEWMcEyP4Gc@HNqIioTeb3t8GS/uv2SuuIZK6OwM/bkuCaQyJQu4PXQjh150UNJJb@Cnuvfi/gFnaol3RiyWPsrxO7rvXCZ3salEMzyqx7T8UEU/kjHW6yDW9oCq1oAgT1BFOE@OibVDHO3hX6aRKc13TJJxGsgQy59iMvIpo@czzFpx0rAO@W@p3ih7ZORODAcvvWYX0mB5fm/8Wx/s7HPmOnBQarPFudb4Fw

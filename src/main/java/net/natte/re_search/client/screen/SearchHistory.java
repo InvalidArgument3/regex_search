@@ -1,8 +1,6 @@
 package net.natte.re_search.client.screen;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.util.Mth;
 
 import java.util.ArrayList;
 import java.util.List;

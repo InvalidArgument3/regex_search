@@ -1,4 +1,4 @@
-package net.natte.re_search.client;
+package net.natte.re_search.client.config;
 
 import net.natte.re_search.client.ClientSettings;
 import net.natte.re_search.client.ColorTheme;

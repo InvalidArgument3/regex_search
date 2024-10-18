@@ -1,0 +1,46 @@
+{
+  "themes": [
+    {
+      "name": "My Theme",
+      "selected": true,
+      "palettes": {
+        "attribute": {
+          "mod": {
+            "colors": {"color": "#5555ff", "regex": "#5555ff", "escape": "#5555ff", "regexSpecial": "#5555ff"},
+            "bold": false, "italic": false, "underlined": false, "strikethrough": false
+          },
+          "name": {
+            "colors": {"color": "#5555ff", "regex": "#5555ff", "escape": "#5555ff", "regexSpecial": "#5555ff"},
+            "bold": false, "italic": false, "underlined": false, "strikethrough": false
+          },
+          "regexName": {
+            "colors": {"color": "#5555ff", "regex": "#5555ff", "escape": "#5555ff", "regexSpecial": "#5555ff"},
+            "bold": false, "italic": false, "underlined": false, "strikethrough": false
+          },
+          "id": {
+            "colors": {"color": "#5555ff", "regex": "#5555ff", "escape": "#5555ff", "regexSpecial": "#5555ff"},
+            "bold": false, "italic": false, "underlined": false, "strikethrough": false
+          },
+          "tooltip": {
+            "colors": {"color": "#5555ff", "regex": "#5555ff", "escape": "#5555ff", "regexSpecial": "#5555ff"},
+            "bold": false, "italic": false, "underlined": false, "strikethrough": false
+          },
+          "tag": {
+            "colors": {"color": "#5555ff", "regex": "#5555ff", "escape": "#5555ff", "regexSpecial": "#5555ff"},
+            "bold": false, "italic": false, "underlined": false, "strikethrough": false
+          }
+        },
+        "special": {
+          "negate": {
+            "color": "#5555ff",
+            "bold": false, "italic": false, "underlined": false, "strikethrough": false
+          },
+          "leftover": {
+            "color": "#5555ff",
+            "bold": false, "italic": false, "underlined": false, "strikethrough": false
+          }
+        }
+      }
+    }
+  ]
+}

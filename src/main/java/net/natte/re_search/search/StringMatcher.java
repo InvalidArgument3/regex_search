@@ -1,44 +1,40 @@
 package net.natte.re_search.search;
 
-import java.util.function.BiPredicate;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-public class StringMatcher {
+public interface StringMatcher extends Predicate<String> {
 
-    public static Predicate<String> preparePredicate(String string, SearchOptions options) {
-        return StringMatcher.overCaseFold(StringMatcher.parseBoundaries(string),
-                options.isCaseSensitive(), StringMatcher.trimBoundary(string));
-
+    static StringMatcher regex(String content, SearchOptions searchOptions) {
+        return new Regex(content, getRegexFlags(searchOptions));
     }
 
-    private static BiPredicate<String, String> parseBoundaries(String string) {
-        if (string.isEmpty()) {
-            return (filterString, itemString) -> itemString.contains(filterString);
+    static StringMatcher literal(String content, SearchOptions searchOptions) {
+        return new Regex(content, getRegexFlags(searchOptions) | Pattern.LITERAL);
+    }
+
+    private static int getRegexFlags(SearchOptions searchOptions) {
+
+        int flag = 0;
+        if (!searchOptions.isCaseSensitive())
+            flag |= Pattern.CASE_INSENSITIVE;
+        flag |= Pattern.DOTALL;
+        return flag;
+    }
+
+
+    class Regex implements StringMatcher {
+        final Matcher matcher;
+
+        public Regex(String regex, int flags) {
+            this.matcher = Pattern.compile(regex, flags).matcher("");
+
         }
-        boolean matchStart = string.charAt(0) == '^';
-        boolean matchEnd = string.charAt(string.length() - 1) == '$';
 
-        if (matchStart)
-            return matchEnd ? String::equals : String::startsWith;
-        else
-            return matchEnd ? String::endsWith : String::contains;
-    }
-
-    public static String trimBoundary(String string) {
-        if (string.startsWith("^"))
-            string = string.substring(1);
-        if (string.endsWith("$"))
-            string = string.substring(0, string.length() - 1);
-        return string;
-    }
-
-    public static Predicate<String> overCaseFold(BiPredicate<String, String> function, boolean isCaseSensitive,
-                                                 String string) {
-        if (isCaseSensitive)
-            return a -> function.test(string, a);
-        else {
-            String lower = string.toLowerCase();
-            return a -> function.test(lower, a.toLowerCase());
+        @Override
+        public boolean test(String s) {
+            return matcher.reset(s).find();
         }
     }
 }

@@ -25,7 +25,7 @@ public class Searcher {
 
     private final SearchOptions searchOptions;
     private final ServerPlayer player;
-    private final Filter filter;
+    private final ItemStackMatcher matcher;
 
     private final int range;
     private final boolean doSearchBlocks;
@@ -37,7 +37,7 @@ public class Searcher {
     private Searcher(SearchOptions searchOptions, ServerPlayer player) {
         this.searchOptions = searchOptions;
         this.player = player;
-        this.filter = new Filter(searchOptions, player);
+        this.matcher = ItemStackMatcher.create(searchOptions, player);
 
         this.range = Config.range;
         this.doSearchBlocks = Config.searchContext.doesSearchBlocks() && searchOptions.searchContext().doesSearchBlocks();
@@ -105,7 +105,7 @@ public class Searcher {
             return false;
 
         boolean foundAny = false;
-        boolean itemStackMatches = filter.test(itemStack);
+        boolean itemStackMatches = matcher.test(itemStack);
         if (itemStackMatches) {
             markedInventory.inventory().add(itemStack);
             ++totalItems;

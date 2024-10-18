@@ -1,6 +1,5 @@
 package net.natte.re_search.search;
 
-import com.google.common.base.Predicates;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Item;
@@ -8,7 +7,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 
 import java.util.function.Predicate;
-import java.util.regex.Pattern;
 
 public class Filter {
 
@@ -25,40 +23,43 @@ public class Filter {
     }
 
     private Predicate<ItemStack> parseFilterExpression() {
-        switch (searchOptions.searchMode()) {
-            case REGEX -> {
-                // TODO: make regex -> extended+regex
-                Pattern pattern = Pattern.compile(searchOptions.expression(),
-                        searchOptions.isCaseSensitive() ? 0 : Pattern.CASE_INSENSITIVE);
 
-                return itemStack -> {
-                    String name = itemStack.getItem().getDescription().getString();
-                    return pattern.matcher(name).find();
-                };
-            }
-
-            case LITERAL -> {
-                String string = searchOptions.expression();
-                Predicate<String> predicate = StringMatcher.overCaseFold((a, b) -> b.contains(a),
-                        this.searchOptions.isCaseSensitive(), string);
-                Predicate<ItemStack> p = name(predicate);
-                p = p.or(mod(predicate));
-                p = p.or(id(predicate));
-                p = p.or(tag(predicate));
-                p = p.or(tooltip(predicate));
-                return p;
-            }
-            case EXTENDED -> {
-                String[] words = searchOptions.expression().split(" ");
-                Predicate<ItemStack> p = Predicates.alwaysTrue();
-                for (String word : words) {
-                    if (word.isEmpty())
-                        continue;
-                    p = p.and(parseWord(word));
-                }
-                return p;
-            }
-        }
+//        searchOptions.words().stream().map(Word::asPredicate)
+//
+//        switch (searchOptions.searchMode()) {
+//            case REGEX -> {
+//                // TODO: make regex -> extended+regex
+//                Pattern pattern = Pattern.compile(searchOptions.expression(),
+//                        searchOptions.isCaseSensitive() ? 0 : Pattern.CASE_INSENSITIVE);
+//
+//                return itemStack -> {
+//                    String name = itemStack.getItem().getDescription().getString();
+//                    return pattern.matcher(name).find();
+//                };
+//            }
+//
+//            case LITERAL -> {
+//                String string = searchOptions.expression();
+//                Predicate<String> predicate = StringMatcherOld.overCaseFold((a, b) -> b.contains(a),
+//                        this.searchOptions.isCaseSensitive(), string);
+//                Predicate<ItemStack> p = name(predicate);
+//                p = p.or(mod(predicate));
+//                p = p.or(id(predicate));
+//                p = p.or(tag(predicate));
+//                p = p.or(tooltip(predicate));
+//                return p;
+//            }
+//            case EXTENDED -> {
+//                String[] words = searchOptions.expression().split(" ");
+//                Predicate<ItemStack> p = Predicates.alwaysTrue();
+//                for (String word : words) {
+//                    if (word.isEmpty())
+//                        continue;
+//                    p = p.and(parseWord(word));
+//                }
+//                return p;
+//            }
+//        }
         return null;
     }
 
@@ -71,7 +72,7 @@ public class Filter {
         if (c == '-') {
             return negate(parseWord(string));
         }
-        Predicate<String> predicate = StringMatcher.preparePredicate(string, this.searchOptions);
+        Predicate<String> predicate = StringMatcherOld.preparePredicate(string, this.searchOptions);
 
         if (c == '@') {
             return string.contains(":") ? modColonId(predicate) : mod(predicate);
@@ -85,7 +86,7 @@ public class Filter {
         if (c == '#') {
             return tooltip(predicate);
         } else {
-            return name(StringMatcher.preparePredicate(word, this.searchOptions));
+            return name(StringMatcherOld.preparePredicate(word, this.searchOptions));
         }
 
     }

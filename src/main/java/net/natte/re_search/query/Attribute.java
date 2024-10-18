@@ -11,7 +11,7 @@ public enum Attribute {
         return switch (prefix){
             case "" -> NAME;
             case "@" -> MOD;
-            case "*" -> ID;
+            case ":" -> ID;
             case "$" -> TOOLTIP;
             case "#" -> TAG;
             default -> throw new IllegalStateException("Unexpected value: " + prefix);

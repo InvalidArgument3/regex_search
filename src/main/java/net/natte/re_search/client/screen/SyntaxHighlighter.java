@@ -2,6 +2,7 @@ package net.natte.re_search.client.screen;
 
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.FormattedCharSequence;
+import net.natte.re_search.client.ColorTheme;
 import net.natte.re_search.query.QueryParser;
 import net.natte.re_search.query.Token;
 import net.natte.re_search.query.Word;
@@ -122,11 +123,12 @@ public class SyntaxHighlighter {
         styledChars.clear();
         List<Token> tokens_ = QueryParser.tokenize(string);
         for (Token token : tokens_) {
-            String content = token.content();
+            String content = token.getContent();
             for (int i = 0; i < content.length(); ++i) {
-                styledChars.add(FormattedCharSequence.forward(String.valueOf(content.charAt(i)), token.style()));
+                styledChars.add(FormattedCharSequence.forward(String.valueOf(content.charAt(i)), token.getStyle(ColorTheme.get())));
             }
-            tokens.add("`" + token.content() + "` " + token.primary() + " " + token.secondary());
+//            tokens.add("`" + token.content() + "` " + token.attributeType() + " " + token.secondary());
+            tokens.add(token.toString());
         }
         words = QueryParser.parse(string);
 

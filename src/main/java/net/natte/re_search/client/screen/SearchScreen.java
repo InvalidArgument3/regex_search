@@ -96,12 +96,12 @@ public class SearchScreen extends Screen {
         super.render(guiGraphics, mouseX, mouseY, partialTick);
         int i = 0;
         for(String token : highlighter.tokens) {
-            guiGraphics.drawString(font, token, width / 2 + 100, height / 3 + i++ * 15, 0xffffff);
+            guiGraphics.drawString(font, token, width / 2 + 100, 10 + i++ * 15, 0xffffff);
         }
 
         i = 0;
         for(Word word : highlighter.words) {
-            guiGraphics.drawString(font, word.toComponent(), width / 2 - 300, height / 3 + i++ * 15, 0xffffff);
+            guiGraphics.drawString(font, word.toComponent(), width / 2 - 300, 10 + i++ * 15, 0xffffff);
         }
 
     }
@@ -110,14 +110,13 @@ public class SearchScreen extends Screen {
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (keyCode == GLFW.GLFW_KEY_ENTER) {
 
-            String text = searchBox.getValue();
-            if (text.isEmpty()) {
+            String query = searchBox.getValue();
+            if (query.isEmpty()) {
                 HighlightRenderer.clear();
             } else {
-                PacketDistributor.sendToServer(new ItemSearchPacketC2S(new SearchOptions(text, ClientSettings.isCaseSensitive, ClientSettings.searchMode,
-                        ClientSettings.searchContext)));
+                PacketDistributor.sendToServer(new ItemSearchPacketC2S(new SearchOptions(query, ClientSettings.isCaseSensitive, ClientSettings.searchContext, client.options.advancedItemTooltips)));
 
-                ClientSettings.searchHistory.add(text);
+                ClientSettings.searchHistory.add(query);
                 HighlightRenderer.startRender();
             }
             onClose();

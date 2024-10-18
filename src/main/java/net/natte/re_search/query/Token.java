@@ -1,62 +1,64 @@
 package net.natte.re_search.query;
 
 import net.minecraft.network.chat.Style;
-import net.natte.re_search.client.Styles;
+import net.natte.re_search.client.ColorTheme;
 
-public class Token {
-
-    private String content;
-    private Type primary;
-    private Type secondary;
-
-    private Token(String content, Type primary, Type secondary) {
-        this.content = content;
-        this.primary = primary;
-        this.secondary = secondary;
+public interface Token {
+    default Style getStyle(ColorTheme colorTheme) {
+        return colorTheme.getStyle(this);
     }
 
-    public static Token of(String content, Type primary) {
-        return of(content, primary, primary);
+    String getContent();
+
+    static Attribute attribute(String content, AttributeType attributeType, Type type) {
+        return new Attribute(content, attributeType, type);
     }
 
-    public static Token of(String content, Type primary, Type secondary) {
-        return new Token(content, primary, secondary);
+    static Special special(String content, SpecialType specialType) {
+        return new Special(content, specialType);
     }
 
-    public String content() {
-        return content;
+    record Attribute(String content, AttributeType attributeType, Type type) implements Token {
+        @Override
+        public String getContent() {
+            return content;
+        }
     }
 
-    public Type primary() {
-        return primary;
+    record Special(String content, SpecialType specialType) implements Token {
+        @Override
+        public String getContent() {
+            return content;
+        }
     }
 
-    public Type secondary() {
-        return secondary;
-    }
-
-    public Style style() {
-        return Styles.getStyle(this);
-    }
-
-    public enum Type {
+    enum AttributeType {
         NAME,
+        NAME_REGEX,
         MOD,
         ID,
         TOOLTIP,
-        TAG,
+        TAG
+    }
 
-        NEGATE,
+    enum Type {
         QUOTE,
         REGEX_SLASH,
 
         LITERAL,
+        LITERAL_ESCAPED,
         REGEX,
         REGEX_SPECIAL,
         REGEX_GROUPING,
         REGEX_ESCAPED,
 
+        PREFIX,
+    }
+
+    enum SpecialType {
+        NEGATE,
         SPACE,
         LEFTOVER
     }
+
 }

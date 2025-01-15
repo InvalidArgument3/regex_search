@@ -1,4 +1,4 @@
-package net.natte.re_search.search;
+package net.natte.re_search.search.matcher;
 
 import net.minecraft.world.item.ItemStack;
 

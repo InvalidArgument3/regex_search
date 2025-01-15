@@ -15,13 +15,10 @@ import net.natte.re_search.query.Word;
 import net.natte.re_search.search.SearchOptions;
 import net.natte.re_search.search.context.CaseSensitivity;
 import net.natte.re_search.search.context.SearchContext;
-import net.natte.re_search.search.context.SearchMode;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.lwjgl.glfw.GLFW;
-
-import java.util.ArrayList;
 
 @OnlyIn(Dist.CLIENT)
 public class SearchScreen extends Screen {
@@ -38,7 +35,6 @@ public class SearchScreen extends Screen {
 
     private static final CycleableOption<CaseSensitivity> caseSensitivity = CycleableOption.create("case_sensitivity", CaseSensitivity.class, 0);
     private static final CycleableOption<SearchContext> SearchContext = CycleableOption.create("search_type", SearchContext.class, 40);
-    private static final CycleableOption<SearchMode> searchMode = CycleableOption.create("search_mode", SearchMode.class, 80);
     private static final CycleableOption<KeepMode> keepMode = CycleableOption.create("keep_mode", KeepMode.class, 120);
 
     public SearchScreen(Screen parent, Minecraft client) {
@@ -65,7 +61,6 @@ public class SearchScreen extends Screen {
         addRenderableWidget(searchBox);
 
         highlighter = new SyntaxHighlighter();
-        highlighter.setMode(ClientSettings.searchMode);
         searchBox.setFormatter(highlighter::provideRenderText);
         searchBox.setResponder(highlighter::refresh);
 
@@ -77,9 +72,6 @@ public class SearchScreen extends Screen {
 
         this.addRenderableWidget(
                 new TexturedCyclingButtonWidget<>(SearchContext.withState(ClientSettings.searchContext), centerX + 7, centerY + 71, WIDGET_TEXTURE, this::onSearchTypeButtonPress));
-
-        this.addRenderableWidget(new TexturedCyclingButtonWidget<>(searchMode.withState(ClientSettings.searchMode),
-                centerX + 41, centerY + 71, WIDGET_TEXTURE, this::onSearchModeButtonPress));
 
         ClientSettings.searchHistory.resetPosition();
         if (ClientSettings.keepMode != KeepMode.CLEAR) {
@@ -95,26 +87,29 @@ public class SearchScreen extends Screen {
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         super.render(guiGraphics, mouseX, mouseY, partialTick);
         int i = 0;
-        for(String token : highlighter.tokens) {
+        for (String token : highlighter.tokens) {
             guiGraphics.drawString(font, token, width / 2 + 100, 10 + i++ * 15, 0xffffff);
         }
 
         i = 0;
-        for(Word word : highlighter.words) {
+        for (Word word : highlighter.words) {
             guiGraphics.drawString(font, word.toComponent(), width / 2 - 300, 10 + i++ * 15, 0xffffff);
         }
+
+        // TODO: remove
+//        guiGraphics.vLine(guiGraphics.guiWidth() / 2, -1, guiGraphics.guiHeight(), 0x90ff00ff);
 
     }
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == GLFW.GLFW_KEY_ENTER) {
+        if (keyCode == GLFW.GLFW_KEY_ENTER && searchBox.isFocused()) {
 
             String query = searchBox.getValue();
             if (query.isEmpty()) {
                 HighlightRenderer.clear();
             } else {
-                PacketDistributor.sendToServer(new ItemSearchPacketC2S(new SearchOptions(query, ClientSettings.isCaseSensitive, ClientSettings.searchContext, client.options.advancedItemTooltips)));
+                PacketDistributor.sendToServer(new ItemSearchPacketC2S(new SearchOptions(query, ClientSettings.isCaseSensitive, ClientSettings.searchContext, client.options.advancedItemTooltips, ClientSettings.languageCode)));
 
                 ClientSettings.searchHistory.add(query);
                 HighlightRenderer.startRender();
@@ -158,13 +153,5 @@ public class SearchScreen extends Screen {
     private void onKeepModeButtonPress(TexturedCyclingButtonWidget<KeepMode> button) {
         ClientSettings.keepMode = button.state.next();
         button.refreshTooltip();
-    }
-
-    private void onSearchModeButtonPress(TexturedCyclingButtonWidget<SearchMode> button) {
-        ClientSettings.searchMode = button.state.next();
-        button.refreshTooltip();
-
-        highlighter.setMode(ClientSettings.searchMode);
-        highlighter.refresh(searchBox.getValue());
     }
 }

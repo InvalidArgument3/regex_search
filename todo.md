@@ -1,4 +1,9 @@
 
+- ways of searching:
+  - [x] searchbar
+  - idk
+
+
 - [x] take screenshots
 - [x] write description
 - [x] create logo

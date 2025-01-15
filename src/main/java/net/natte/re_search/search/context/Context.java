@@ -1,33 +1,38 @@
 package net.natte.re_search.search.context;
 
+import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import net.natte.re_search.search.Localization;
 import net.natte.re_search.search.SearchOptions;
 import org.apache.commons.lang3.NotImplementedException;
+
+import java.util.function.Function;
 
 
 public class Context {
 
     private final ServerPlayer player;
     private final TooltipFlag tooltipFlag;
+    private final Function<Component, String> translator;
+    private final Item.TooltipContext tooltipContext;
 
-    private Context(ServerPlayer player, SearchOptions searchOptions) {
+    private Context(SearchOptions searchOptions, ServerPlayer player) {
         this.player = player;
         this.tooltipFlag = searchOptions.hasAdvancedTooltips() ? TooltipFlag.ADVANCED : TooltipFlag.NORMAL;
+        this.tooltipContext = Item.TooltipContext.of(player.level());
+        this.translator = Localization.getTranslator(searchOptions.languageCode());
     }
 
-    public static Context create(ServerPlayer player, SearchOptions searchOptions) {
-        return new Context(player, searchOptions);
+    public static Context create(SearchOptions searchOptions, ServerPlayer player) {
+        return new Context(searchOptions, player);
     }
 
     public String translate(Component component) {
-        throw new NotImplementedException();
-    }
-
-    public Level level() {
-        throw new NotImplementedException();
+        return translator.apply(component);
     }
 
     public ServerPlayer player() {
@@ -36,5 +41,9 @@ public class Context {
 
     public TooltipFlag tooltipFlag() {
         return this.tooltipFlag;
+    }
+
+    public Item.TooltipContext tooltipContext() {
+        return tooltipContext;
     }
 }

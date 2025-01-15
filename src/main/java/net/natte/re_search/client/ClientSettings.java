@@ -2,26 +2,20 @@ package net.natte.re_search.client;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.util.Unit;
-import net.natte.re_search.RegexSearch;
 import net.natte.re_search.client.screen.SearchHistory;
 import net.natte.re_search.search.context.SearchContext;
-import net.natte.re_search.search.context.SearchMode;
 import net.neoforged.fml.loading.FMLPaths;
-import net.neoforged.neoforge.common.util.NeoForgeExtraCodecs;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class ClientSettings {
-    public static SearchMode searchMode = SearchMode.REGEX;
     public static boolean isCaseSensitive = false;
 
     public static SearchContext searchContext = SearchContext.BLOCKS_AND_ENTITIES;
@@ -30,11 +24,13 @@ public class ClientSettings {
 
     public static int autoHideTime = 20;
 
+    // TODO: add config
+    public static String languageCode = "en_us";
+
     public static SearchHistory searchHistory = new SearchHistory();
 
     private static final Codec<Unit> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
-                    Codec.STRING.xmap(SearchMode::valueOf, SearchMode::name).fieldOf("searchMode").forGetter(u -> searchMode),
                     Codec.STRING.xmap(SearchContext::valueOf, SearchContext::name).fieldOf("searchContext").forGetter(u -> searchContext),
                     Codec.STRING.xmap(KeepMode::valueOf, KeepMode::name).fieldOf("keepMode").forGetter(u -> keepMode),
                     Codec.BOOL.fieldOf("isCaseSensitive").forGetter(u -> isCaseSensitive),
@@ -42,8 +38,7 @@ public class ClientSettings {
             ).apply(instance, ClientSettings::fromCodec)
     );
 
-    private static Unit fromCodec(SearchMode searchMode, SearchContext searchContext, KeepMode keepMode, boolean isCaseSensitive, SearchHistory searchHistory) {
-        ClientSettings.searchMode = searchMode;
+    private static Unit fromCodec(SearchContext searchContext, KeepMode keepMode, boolean isCaseSensitive, SearchHistory searchHistory) {
         ClientSettings.searchContext = searchContext;
         ClientSettings.keepMode = keepMode;
         ClientSettings.isCaseSensitive = isCaseSensitive;

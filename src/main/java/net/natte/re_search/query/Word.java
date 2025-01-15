@@ -7,6 +7,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
 
 import java.util.regex.MatchResult;
+import java.util.regex.Matcher;
 
 public record Word(Attribute attribute, String content, boolean isRegex, boolean isNegate) {
 
@@ -42,15 +43,15 @@ public record Word(Attribute attribute, String content, boolean isRegex, boolean
             isRegex = false;
 
             char quote = match.group("quote").charAt(0);
-            QueryParser.ESCAPE_PATTERN.matcher(content).replaceAll(matchResult -> {
+            content = QueryParser.ESCAPE_PATTERN.matcher(content).replaceAll(matchResult -> {
                 String group = matchResult.group();
                 char c = group.charAt(1);
                 if (c == quote)
-                    return String.valueOf(quote);
+                    return Matcher.quoteReplacement(String.valueOf(quote));
                 if (QueryParser.ALLOWED_ESCAPES_IN_LITERAL.indexOf(c) != -1) {
-                    return String.valueOf(QueryParser.CHARACTER_ESCAPES.get(c));
+                    return Matcher.quoteReplacement(String.valueOf(QueryParser.CHARACTER_ESCAPES.get(c)));
                 }
-                return group;
+                return Matcher.quoteReplacement(group);
             });
 
         }

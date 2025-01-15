@@ -25,7 +25,7 @@ public class TexturedCyclingButtonWidget<E extends Enum<E>> extends Button {
         this.texture = texture;
         this.state = state;
         this.refreshTooltip();
-        this.setTooltipDelay(Duration.ofMillis(700));
+//        this.setTooltipDelay(Duration.ofMillis(700));
     }
 
     @Override

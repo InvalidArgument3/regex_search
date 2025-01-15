@@ -10,25 +10,45 @@ public interface Token {
 
     String getContent();
 
+    boolean hasError();
+
     static Attribute attribute(String content, AttributeType attributeType, Type type) {
-        return new Attribute(content, attributeType, type);
+        return new Attribute(content, attributeType, type, false);
+    }
+
+    static Attribute attribute(String content, AttributeType attributeType, Type type, boolean hasError) {
+        return new Attribute(content, attributeType, type, hasError);
     }
 
     static Special special(String content, SpecialType specialType) {
-        return new Special(content, specialType);
+        return new Special(content, specialType, false);
     }
 
-    record Attribute(String content, AttributeType attributeType, Type type) implements Token {
+    static Special special(String content, SpecialType specialType, boolean hasError) {
+        return new Special(content, specialType, hasError);
+    }
+
+    record Attribute(String content, AttributeType attributeType, Type type, boolean hasError) implements Token {
         @Override
         public String getContent() {
             return content;
         }
+
+        @Override
+        public boolean hasError() {
+            return hasError;
+        }
     }
 
-    record Special(String content, SpecialType specialType) implements Token {
+    record Special(String content, SpecialType specialType, boolean hasError) implements Token {
         @Override
         public String getContent() {
             return content;
+        }
+
+        @Override
+        public boolean hasError() {
+            return hasError;
         }
     }
 

@@ -76,13 +76,13 @@ public class HighlightRenderer {
                 float scale = 0.15f / distance;
                 scale = Math.max(scale, (scale - 0.02f) * 0.7f + 0.02f);
 
-                float c = 1000f;
-                poseStack.translate(pos.x / uiScale, pos.y / uiScale, -100);
-                poseStack.translate(-renderedItem.x * scale * c, -renderedItem.y * scale * c, -distance * distance);
-                poseStack.scale(scale, scale, scale);
+                float sc = scale * 1000f;
+                poseStack.translate(pos.x / uiScale, pos.y / uiScale, 0);
+                poseStack.translate(-renderedItem.x * sc, -renderedItem.y * sc, sc);
+                poseStack.scale(scale, scale, 1);
                 poseStack.scale(1.f, -1.f, 1.f);
                 float sc2 = 1000f;
-                poseStack.scale(sc2, sc2, sc2);
+                poseStack.scale(sc2, sc2, 1);
 
                 Matrix4f positionMatrix = poseStack.last().pose();
 
@@ -124,6 +124,8 @@ public class HighlightRenderer {
     public static void onRenderWorld(PoseStack matrixStack, Matrix4f projectionMatrix, Camera camera, DeltaTracker deltaTracker) {
         float tickDelta = deltaTracker.getGameTimeDeltaTicks();
         processItems(matrixStack, projectionMatrix, camera, tickDelta);
+
+
     }
 
     private static void processItems(PoseStack matrixStack, Matrix4f projectionMatrix, Camera camera, float tickDelta) {
@@ -247,8 +249,8 @@ public class HighlightRenderer {
         matrixStack.translate((float) x, (float) y, 0);
 
         float sc = scale * 1000f;
-        matrixStack.translate(-renderedItem.x * sc, -renderedItem.y * sc, 0);
-        matrixStack.scale(sc, sc, sc);
+        matrixStack.translate(-renderedItem.x * sc, -renderedItem.y * sc, sc);
+        matrixStack.scale(sc, sc, 1);
         RenderSystem.applyModelViewMatrix();
 
         PoseStack itemPoseStack = new PoseStack();

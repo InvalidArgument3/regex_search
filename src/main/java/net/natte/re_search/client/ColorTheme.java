@@ -35,7 +35,7 @@ public class ColorTheme {
     static {
         set(new ColorTheme(
 //                Palette.of(0xffffff, 0xcc3737, 0xfca955, 0xdcdcaa), // edit
-                Palette.of(0xcc7832, 0xe8bf6a, 0xe8bf6a, 0xe8bf6a),
+                Palette.of(0xcc7832, 0xe8bf6a, 0xcc7832, 0xcc7832),
 
 //                Palette.of(0xffffff, 0xcc3737, 0xfca955, 0xdcdcaa),  // edit
 //                Palette.of(0xf58425, 0xf5a625, 0xf5be25, 0xf5be25),
@@ -93,8 +93,10 @@ public class ColorTheme {
     }
 
     public Style getStyle(Token token) {
-        return switch (token) {
-            case Token.Attribute(String content, Token.AttributeType attributeType, Token.Type type) -> {
+        Style style = switch (token) {
+            case Token.Attribute(
+                    String content, Token.AttributeType attributeType, Token.Type type, boolean hasError
+            ) -> {
                 Palette palette = getPalette(attributeType);
                 yield switch (type) {
                     case REGEX_SLASH, LITERAL, PREFIX -> palette.color();
@@ -103,7 +105,7 @@ public class ColorTheme {
                     case LITERAL_ESCAPED, REGEX_ESCAPED -> palette.escaped();
                 };
             }
-            case Token.Special(String content, Token.SpecialType specialType) -> {
+            case Token.Special(String content, Token.SpecialType specialType, boolean hasError) -> {
                 yield switch (specialType) {
                     case NEGATE -> negate;
                     case SPACE -> space;
@@ -112,6 +114,10 @@ public class ColorTheme {
             }
             default -> throw new IllegalStateException("Unexpected value: " + token);
         };
+        if (token.hasError())
+            style = style.withUnderlined(true);
+
+        return style;
     }
 
     private Palette getPalette(Token.AttributeType attributeType) {

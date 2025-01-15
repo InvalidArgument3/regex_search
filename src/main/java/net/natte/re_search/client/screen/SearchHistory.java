@@ -40,7 +40,7 @@ public class SearchHistory {
     }
 
     public String getNext() {
-        if (historyIndex + 1 < searchHistory.size()) {
+        if (historyIndex < searchHistory.size()) {
             historyIndex += 1;
             return getCurrent();
         }

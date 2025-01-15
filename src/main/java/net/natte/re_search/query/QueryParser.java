@@ -140,22 +140,23 @@ public class QueryParser {
             tokens.add(Token.attribute("/", attributeType, Token.Type.REGEX_SLASH));
 
         String regex = slashSeparated ? match.group("slashregex") : match.group("regex");
+        boolean hasError = !Util.isValidRegex(regex);
         boolean escaped = false;
         for (char c : regex.toCharArray()) {
             if (escaped) {
                 escaped = false;
-                tokens.add(Token.attribute(String.valueOf(c), attributeType, Token.Type.REGEX_ESCAPED));
+                tokens.add(Token.attribute(String.valueOf(c), attributeType, Token.Type.REGEX_ESCAPED, hasError));
             } else if (c == '\\') {
                 escaped = true;
-                tokens.add(Token.attribute(String.valueOf(c), attributeType, Token.Type.REGEX_ESCAPED));
+                tokens.add(Token.attribute(String.valueOf(c), attributeType, Token.Type.REGEX_ESCAPED, hasError));
             } else if ("(){}[]".indexOf(c) != -1) {
-                tokens.add(Token.attribute(String.valueOf(c), attributeType, Token.Type.REGEX_GROUPING));
+                tokens.add(Token.attribute(String.valueOf(c), attributeType, Token.Type.REGEX_GROUPING, hasError));
             } else if ("|^$".indexOf(c) != -1) {
-                tokens.add(Token.attribute(String.valueOf(c), attributeType, Token.Type.REGEX_SPECIAL));
+                tokens.add(Token.attribute(String.valueOf(c), attributeType, Token.Type.REGEX_SPECIAL, hasError));
             } else if (".*+?".indexOf(c) != -1) {
-                tokens.add(Token.attribute(String.valueOf(c), attributeType, Token.Type.REGEX_ESCAPED));
+                tokens.add(Token.attribute(String.valueOf(c), attributeType, Token.Type.REGEX_ESCAPED, hasError));
             } else {
-                tokens.add(Token.attribute(String.valueOf(c), attributeType, Token.Type.REGEX));
+                tokens.add(Token.attribute(String.valueOf(c), attributeType, Token.Type.REGEX, hasError));
             }
         }
 

@@ -1,57 +1,56 @@
 {
-    "item.re_search.arrow_item": "Arrow",
-    "popup.re_search.no_matching_items_found": "No matching items found",
-    "category.re_search.keybinds": "Regex Search",
-    "key.re_search.search": "Open search box",
-    "screen.re_search.label": "Search",
+    "popup.regex_search.no_matching_items_found": "No matching items found",
+    "category.regex_search.keybinds": "Regex Search",
+    "key.regex_search.search": "Open search box",
+    "screen.regex_search.label": "Search",
 
 
-    "option.re_search.case_sensitivity.sensitive": "Case sensitive",
-    "description.re_search.case_sensitivity.sensitive": "Match letter case",
+    "option.regex_search.case_sensitivity.sensitive": "Case sensitive",
+    "description.regex_search.case_sensitivity.sensitive": "Match letter case",
 
-    "option.re_search.case_sensitivity.insensitive": "Case insensitive",
-    "description.re_search.case_sensitivity.insensitive": "Ignore letter case",
-
-
-    "option.re_search.search_type.blocks_and_entities": "Search both",
-    "description.re_search.search_type.blocks_and_entities": "Search in blocks and entities",
-
-    "option.re_search.search_type.blocks": "Search blocks",
-    "description.re_search.search_type.blocks": "Search in blocks",
-
-    "option.re_search.search_type.entities": "Search entities",
-    "description.re_search.search_type.entities": "Search in entities",
+    "option.regex_search.case_sensitivity.insensitive": "Case insensitive",
+    "description.regex_search.case_sensitivity.insensitive": "Ignore letter case",
 
 
-    "option.re_search.keep_mode.clear": "Clear",
-    "description.re_search.keep_mode.clear": "Clear search field",
+    "option.regex_search.search_type.blocks_and_entities": "Search both",
+    "description.regex_search.search_type.blocks_and_entities": "Search in blocks and entities",
 
-    "option.re_search.keep_mode.keep": "Keep",
-    "description.re_search.keep_mode.keep": "Remember last search",
+    "option.regex_search.search_type.blocks": "Search blocks",
+    "description.regex_search.search_type.blocks": "Search in blocks",
 
-    "option.re_search.keep_mode.auto_select": "Auto select",
-    "description.re_search.keep_mode.auto_select": "Remember last search and auto select",
-
-
-    "config.re_search.reloaded": "Reloaded config",
+    "option.regex_search.search_type.entities": "Search entities",
+    "description.regex_search.search_type.entities": "Search in entities",
 
 
+    "option.regex_search.keep_mode.clear": "Clear",
+    "description.regex_search.keep_mode.clear": "Clear search field",
 
-    "clientconfig.re_search.auto_hide_time": "Auto Hide Time",
-    "clientconfig.re_search.auto_hide_time.tooltip": "How many seconds found items are rendered, -1 for no limit. (search \"\" to stop rendering)",
+    "option.regex_search.keep_mode.keep": "Keep",
+    "description.regex_search.keep_mode.keep": "Remember last search",
+
+    "option.regex_search.keep_mode.auto_select": "Auto select",
+    "description.regex_search.keep_mode.auto_select": "Remember last search and auto select",
 
 
-    "re_search.configuration.maxSearchResultsPerInventory": "Max Search Results Per Inventory",
+    "config.regex_search.reloaded": "Reloaded config",
 
-    "re_search.configuration.searchContext": "Search Blocks And Entities",
-    "re_search.configuration.searchContext.tooltip": "Whether to Search Blocks, Entities or Both.",
 
-    "re_search.configuration.range": "Search Range",
-    "re_search.configuration.range.tooltip": "Search Range in Blocks",
 
-    "re_search.configuration.maxInventories": "Max Result Inventories",
+    "clientconfig.regex_search.auto_hide_time": "Auto Hide Time",
+    "clientconfig.regex_search.auto_hide_time.tooltip": "How many seconds found items are rendered, -1 for no limit. (search \"\" to stop rendering)",
 
-    "re_search.configuration.maxSearchResults": "Max Search Results",
 
-    "re_search.configuration.recursionLimit": "Recursion Limit"
+    "regex_search.configuration.maxSearchResultsPerInventory": "Max Search Results Per Inventory",
+
+    "regex_search.configuration.searchContext": "Search Blocks And Entities",
+    "regex_search.configuration.searchContext.tooltip": "Whether to Search Blocks, Entities or Both.",
+
+    "regex_search.configuration.range": "Search Range",
+    "regex_search.configuration.range.tooltip": "Search Range in Blocks",
+
+    "regex_search.configuration.maxInventories": "Max Result Inventories",
+
+    "regex_search.configuration.maxSearchResults": "Max Search Results",
+
+    "regex_search.configuration.recursionLimit": "Recursion Limit"
 }

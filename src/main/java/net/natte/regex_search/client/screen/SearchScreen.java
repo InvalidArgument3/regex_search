@@ -97,7 +97,7 @@ public class SearchScreen extends Screen {
         }
 
         // TODO: remove
-//        guiGraphics.vLine(guiGraphics.guiWidth() / 2, -1, guiGraphics.guiHeight(), 0x90ff00ff);
+        guiGraphics.vLine(guiGraphics.guiWidth() / 2, -1, guiGraphics.guiHeight(), 0x90ff00ff);
 
     }
 

@@ -31,7 +31,7 @@ public class RegexSearchClient {
 
     public static final Minecraft client = Minecraft.getInstance();
 
-    private static final KeyMapping openSearchScreenKeyBind = new KeyMapping("key.regex_search.search", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_F, "category.regex_search.keybinds");
+    private static final KeyMapping openSearchScreenKeyBind = new KeyMapping("key.regex_search.search", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_Y, "category.regex_search.keybinds");
 
     public RegexSearchClient(IEventBus modBus, ModContainer modContainer) {
 

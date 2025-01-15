@@ -13,6 +13,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.natte.regex_search.RegexSearch;
 import net.natte.regex_search.client.ClientSettings;
@@ -225,6 +226,34 @@ public class HighlightRenderer {
         }
 
         return new Vector4f(x, wnd.getHeight() - y, screenPos.z, 1f / (screenPos.w * 2f));
+    }
+
+    public static Vec2 project3Dto2D(Vec3 worldPosition, Matrix4f modelViewMatrix, Matrix4f projectionMatrix, Camera camera) {
+
+        Vec3 cameraPosition = camera.getPosition();
+        Quaternionf cameraRotation = camera.rotation();
+        Vec3 in3d = worldPosition.subtract(cameraPosition);
+
+        var wnd = Minecraft.getInstance().getWindow();
+        var quaternion = new Quaternionf((float) in3d.x, (float) in3d.y, (float) in3d.z, 1.f);
+
+        Matrix4f m = modelViewMatrix.rotate(cameraRotation.invert()); // this
+        var product = mqProduct(projectionMatrix, mqProduct(m, quaternion));
+        modelViewMatrix.rotate(cameraRotation); // undo that
+
+        if (product.w <= 0f) {
+            return null;
+        }
+
+        var screenPos = qToScreen(product);
+        var x = screenPos.x * wnd.getWidth();
+        var y = screenPos.y * wnd.getHeight();
+
+        if (Float.isInfinite(x) || Float.isInfinite(y)) {
+            return null;
+        }
+
+        return new Vec2(x, wnd.getHeight() - y);
     }
 
     private static Quaternionf mqProduct(Matrix4f m, Quaternionf q) {

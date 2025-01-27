@@ -31,6 +31,8 @@
     "option.regex_search.keep_mode.auto_select": "Auto select",
     "description.regex_search.keep_mode.auto_select": "Remember last search and auto select",
 
+    "option.regex_search.settings.instance": "Settings",
+    "description.regex_search.settings.instance": "Open settings",
 
     "config.regex_search.reloaded": "Reloaded config",
 

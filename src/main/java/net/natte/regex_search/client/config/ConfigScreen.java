@@ -1,9 +1,9 @@
 package net.natte.regex_search.client.config;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
@@ -17,6 +17,12 @@ import java.util.function.Supplier;
 public class ConfigScreen extends ConfigurationScreen.ConfigurationSectionScreen {
     public ConfigScreen(Screen parent, ModConfig.Type type, ModConfig modConfig, Component title) {
         super(parent, type, modConfig, title);
+        try {
+            System.out.println("title = " + title);
+            System.out.println("title.getContents() = " + ((TranslatableContents) title.getContents()).getKey());
+        } catch (Exception e) {
+            System.err.println(e);
+        }
     }
 
     public static Screen createConfigScreen(ModContainer modContainer, Screen parent) {
@@ -26,7 +32,7 @@ public class ConfigScreen extends ConfigurationScreen.ConfigurationSectionScreen
     @Override
     public void render(GuiGraphics graphics, int p_281550_, int p_282878_, float p_282465_) {
         super.render(graphics, p_281550_, p_282878_, p_282465_);
-        graphics.drawString(Minecraft.getInstance().font, Component.literal("hello"), 100, 100, 0xffffff);
+//        graphics.drawString(Minecraft.getInstance().font, Component.literal("hello"), 100, 100, 0xffffff);
     }
 
     @Nullable

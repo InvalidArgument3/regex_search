@@ -18,7 +18,6 @@ import net.natte.regex_search.client.config.ClientConfig;
 import net.natte.regex_search.client.config.ConfigScreen;
 import net.natte.regex_search.client.render.HighlightRenderer;
 import net.natte.regex_search.network.ItemSearchPacketC2S;
-import net.natte.regex_search.query.Word;
 import net.natte.regex_search.search.SearchOptions;
 import net.natte.regex_search.search.context.CaseSensitivity;
 import net.natte.regex_search.search.context.SearchContext;
@@ -117,19 +116,6 @@ public class SearchScreen extends Screen {
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         super.render(guiGraphics, mouseX, mouseY, partialTick);
-        int i = 0;
-        for (String token : highlighter.tokens) {
-            guiGraphics.drawString(font, token, width / 2 + 100, 10 + i++ * 15, 0xffffff);
-        }
-
-        i = 0;
-        for (Word word : highlighter.words) {
-            guiGraphics.drawString(font, word.toComponent(), width / 2 - 300, 10 + i++ * 15, 0xffffff);
-        }
-
-        // TODO: remove
-        guiGraphics.vLine(guiGraphics.guiWidth() / 2, -1, guiGraphics.guiHeight(), 0x90ff00ff);
-
     }
 
     @Override

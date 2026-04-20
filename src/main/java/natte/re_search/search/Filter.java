@@ -3,22 +3,23 @@ package natte.re_search.search;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
-import net.minecraft.client.item.TooltipContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.registry.Registries;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 
 public class Filter {
 
-    private SearchOptions searchOptions;
-    private ServerPlayerEntity player;
+    private final SearchOptions searchOptions;
+    private final ServerPlayer player;
     private Predicate<ItemStack> predicate;
 
-    public Filter(SearchOptions searchOptions, ServerPlayerEntity player) {
+    public Filter(SearchOptions searchOptions, ServerPlayer player) {
         this.searchOptions = searchOptions;
         this.player = player;
-        this.predicate = itemStack -> !itemStack.isOf(Items.AIR);
+        this.predicate = itemStack -> !itemStack.isEmpty();
 
         parseFilterExpression();
     }
@@ -29,19 +30,19 @@ public class Filter {
                     searchOptions.isCaseSensitive ? 0 : Pattern.CASE_INSENSITIVE);
 
             add(itemStack -> {
-                String name = itemStack.getItem().getName().getString();
+                String name = itemStack.getItem().getName(itemStack).getString();
                 return pattern.matcher(name).find();
             });
 
         } else if (searchOptions.searchMode == 1) {
             String string = searchOptions.expression;
-            Predicate<String> predicate = StringMatcher.overCaseFold((a, b) -> b.contains(a),
+            Predicate<String> stringPredicate = StringMatcher.overCaseFold((a, b) -> b.contains(a),
                     this.searchOptions.isCaseSensitive, string);
-            Predicate<ItemStack> p = name(predicate);
-            p = p.or(mod(predicate));
-            p = p.or(id(predicate));
-            p = p.or(tag(predicate));
-            p = p.or(tooltip(predicate));
+            Predicate<ItemStack> p = name(stringPredicate);
+            p = p.or(mod(stringPredicate));
+            p = p.or(id(stringPredicate));
+            p = p.or(tag(stringPredicate));
+            p = p.or(tooltip(stringPredicate));
             add(p);
         }
         if (searchOptions.searchMode == 2) {
@@ -63,19 +64,19 @@ public class Filter {
         if (c == '-') {
             return negate(parseWord(string));
         }
-        Predicate<String> predicate = StringMatcher.preparePredicate(string, this.searchOptions);
+        Predicate<String> stringPredicate = StringMatcher.preparePredicate(string, this.searchOptions);
 
         if (c == '@') {
-            return string.contains(":") ? modColonId(predicate) : mod(predicate);
+            return string.contains(":") ? modColonId(stringPredicate) : mod(stringPredicate);
         }
         if (c == '*') {
-            return id(predicate);
+            return id(stringPredicate);
         }
         if (c == '$') {
-            return string.contains(":") ? tagColonId(predicate) : tag(predicate);
+            return string.contains(":") ? tagColonId(stringPredicate) : tag(stringPredicate);
         }
         if (c == '#') {
-            return tooltip(predicate);
+            return tooltip(stringPredicate);
         } else {
             return name(StringMatcher.preparePredicate(word, this.searchOptions));
         }
@@ -86,47 +87,49 @@ public class Filter {
         return this.predicate.test(itemStack);
     }
 
-    private void add(Predicate<ItemStack> predicate) {
-        this.predicate = this.predicate.and(predicate);
+    private void add(Predicate<ItemStack> next) {
+        this.predicate = this.predicate.and(next);
     }
 
-    public Predicate<ItemStack> mod(Predicate<String> predicate) {
-        // @mod
-        return itemStack -> predicate.test(Registries.ITEM.getId(itemStack.getItem()).getNamespace());
+    public Predicate<ItemStack> mod(Predicate<String> stringPredicate) {
+        return itemStack -> stringPredicate.test(BuiltInRegistries.ITEM.getKey(itemStack.getItem()).getNamespace());
     }
 
-    public Predicate<ItemStack> modColonId(Predicate<String> predicate) {
-        // @mod:item
-        return itemStack -> predicate.test(Registries.ITEM.getId(itemStack.getItem()).toString());
+    public Predicate<ItemStack> modColonId(Predicate<String> stringPredicate) {
+        return itemStack -> stringPredicate.test(BuiltInRegistries.ITEM.getKey(itemStack.getItem()).toString());
     }
 
-    public Predicate<ItemStack> id(Predicate<String> predicate) {
-        // *item
-        return itemStack -> predicate.test(Registries.ITEM.getId(itemStack.getItem()).getPath());
+    public Predicate<ItemStack> id(Predicate<String> stringPredicate) {
+        return itemStack -> stringPredicate.test(BuiltInRegistries.ITEM.getKey(itemStack.getItem()).getPath());
     }
 
-    public Predicate<ItemStack> tag(Predicate<String> predicate) {
-        // $tag
-        return itemStack -> itemStack.streamTags().anyMatch(tag -> predicate.test(tag.id().getPath()));
+    public Predicate<ItemStack> tag(Predicate<String> stringPredicate) {
+        return itemStack -> BuiltInRegistries.ITEM.getResourceKey(itemStack.getItem())
+                .flatMap(BuiltInRegistries.ITEM::getHolder)
+                .map(holder -> holder.tags().anyMatch(tagKey -> stringPredicate.test(tagKey.location().getPath())))
+                .orElse(false);
     }
 
-    public Predicate<ItemStack> tagColonId(Predicate<String> predicate) {
-        // $mod:tag
-        return itemStack -> itemStack.streamTags().anyMatch(tag -> predicate.test(tag.id().toString()));
+    public Predicate<ItemStack> tagColonId(Predicate<String> stringPredicate) {
+        return itemStack -> BuiltInRegistries.ITEM.getResourceKey(itemStack.getItem())
+                .flatMap(BuiltInRegistries.ITEM::getHolder)
+                .map(holder -> holder.tags().anyMatch(tagKey -> stringPredicate.test(tagKey.location().toString())))
+                .orElse(false);
     }
 
-    public Predicate<ItemStack> tooltip(Predicate<String> predicate) {
-        return itemStack -> itemStack.getTooltip(player, TooltipContext.ADVANCED).stream()
-                .anyMatch(line -> predicate.test(line.getString()));
+    public Predicate<ItemStack> tooltip(Predicate<String> stringPredicate) {
+        Item.TooltipContext ctx = Item.TooltipContext.of(player.level());
+        return itemStack -> itemStack.getTooltipLines(ctx, player, TooltipFlag.Default.NORMAL).stream()
+                .anyMatch(line -> stringPredicate.test(line.getString()));
 
     }
 
-    public Predicate<ItemStack> name(Predicate<String> predicate) {
-        return itemStack -> predicate.test(itemStack.getName().getString());
+    public Predicate<ItemStack> name(Predicate<String> stringPredicate) {
+        return itemStack -> stringPredicate.test(itemStack.getHoverName().getString());
     }
 
-    public Predicate<ItemStack> negate(Predicate<ItemStack> predicate) {
-        return itemStack -> !predicate.test(itemStack);
+    public Predicate<ItemStack> negate(Predicate<ItemStack> inner) {
+        return itemStack -> !inner.test(itemStack);
     }
 
 }

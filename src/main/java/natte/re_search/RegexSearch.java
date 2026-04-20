@@ -1,15 +1,5 @@
 package natte.re_search;
 
-import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.fabricmc.fabric.api.networking.v1.PacketSender;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,93 +12,97 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 
 import natte.re_search.config.Config;
-import natte.re_search.network.ItemSearchPacketC2S;
-import natte.re_search.network.ItemSearchResultPacketS2C;
+import natte.re_search.network.ItemSearchC2SPayload;
+import natte.re_search.network.ItemSearchResultS2CPayload;
 import natte.re_search.search.MarkedInventory;
 import natte.re_search.search.SearchOptions;
 import natte.re_search.search.Searcher;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
+import net.minecraft.server.level.ServerPlayer;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
+@Mod(RegexSearch.MOD_ID)
+public class RegexSearch {
 
-public class RegexSearch implements ModInitializer {
+    public static final String MOD_ID = "re_search";
+    public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-	public static final String MOD_ID = "re_search";
-	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
+    public RegexSearch(IEventBus modBus) {
+        Config.init(Config.class);
 
-	@Override
-	public void onInitialize() {
+        modBus.addListener(RegexSearch::registerPayloads);
+        NeoForge.EVENT_BUS.addListener(RegexSearch::registerCommands);
+    }
 
-		Config.init(Config.class);
+    private static void registerPayloads(RegisterPayloadHandlersEvent event) {
+        var registrar = event.registrar(MOD_ID);
+        registrar.playToServer(ItemSearchC2SPayload.TYPE, ItemSearchC2SPayload.STREAM_CODEC, RegexSearch::handleItemSearchC2S);
+    }
 
-		ServerPlayConnectionEvents.INIT.register((handler, server) -> {
-			ServerPlayNetworking.registerReceiver(handler, ItemSearchPacketC2S.PACKET_ID,
-					RegexSearch::receive);
-		});
+    private static void handleItemSearchC2S(ItemSearchC2SPayload payload, IPayloadContext context) {
+        context.enqueueWork(() -> {
+            if (!(context.player() instanceof ServerPlayer player)) {
+                return;
+            }
+            SearchOptions searchOptions = payload.options();
+            List<MarkedInventory> inventories = Searcher.search(searchOptions, player);
+            player.connection.send(new ClientboundCustomPayloadPacket(new ItemSearchResultS2CPayload(inventories)));
+            if (inventories.isEmpty()) {
+                player.displayClientMessage(Component.translatable("popup.re_search.no_matching_items_found"), true);
+            }
+        });
+    }
 
-		registerCommands();
+    private static void registerCommands(RegisterCommandsEvent event) {
+        event.getDispatcher().register(
+                Commands.literal(MOD_ID)
+                        .then(reloadConfigCommand("reload"))
+                        .then(showConfigCommand("info")));
+    }
 
-	}
+    private static LiteralArgumentBuilder<CommandSourceStack> reloadConfigCommand(String command) {
+        return Commands.literal(command).requires(source -> source.hasPermission(2))
+                .executes(context -> {
+                    Config.read();
+                    context.getSource().sendSuccess(
+                            () -> Component.translatableWithFallback("config.re_search.reloaded", "Reloaded config"),
+                            true);
+                    return Command.SINGLE_SUCCESS;
+                });
+    }
 
-	private static void receive(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler handler,
-			PacketByteBuf buf, PacketSender responseSender) {
+    private static LiteralArgumentBuilder<CommandSourceStack> showConfigCommand(String command) {
+        return Commands.literal(command).executes(RegexSearch::showConfig);
+    }
 
-		// String expression = buf.readString();
-		SearchOptions searchOptions = SearchOptions.readPacketByteBuf(buf);
+    private static int showConfig(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
 
-		server.execute(() -> {
-			List<MarkedInventory> inventories = Searcher.search(searchOptions, player);
+        List<String> lines = new ArrayList<>();
 
-			PacketByteBuf packet = ItemSearchResultPacketS2C.createPackedByteBuf(inventories);
-			responseSender.sendPacket(ItemSearchResultPacketS2C.PACKET_ID, packet);
+        for (Field field : Config.class.getFields()) {
+            String value = "(null)";
+            try {
+                value = field.get(null).toString();
+            } catch (Exception e) {
+                // ignore
+            }
+            if (!field.getName().equals("configClass")) {
+                lines.add(field.getName() + ": " + value);
+            }
+        }
 
-			if (inventories.isEmpty()) {
-				player.sendMessage(net.minecraft.text.Text.translatable("popup.re_search.no_matching_items_found"),
-						true);
-			}
-		});
-	}
+        source.sendSuccess(() -> Component.literal(String.join("\n", lines)), false);
 
-	private void registerCommands() {
-		CommandRegistrationCallback.EVENT.register(
-				(dispatcher, registryAccess, environment) -> dispatcher.register(
-						CommandManager.literal(MOD_ID)
-								.then(reloadConfigCommand("reload"))
-								.then(showConfigCommand("info"))));
-
-	}
-
-	private static LiteralArgumentBuilder<ServerCommandSource> reloadConfigCommand(String command) {
-		return CommandManager.literal(command).requires(source -> source.hasPermissionLevel(2))
-				.executes(context -> {
-					Config.read();
-					context.getSource()
-							.sendMessage(Text.translatableWithFallback("config.re_search.reloaded", "Reloaded config"));
-					return Command.SINGLE_SUCCESS;
-				});
-	}
-
-	private static LiteralArgumentBuilder<ServerCommandSource> showConfigCommand(String command) {
-		return CommandManager.literal(command).executes(RegexSearch::showConfig);
-	}
-
-	private static int showConfig(CommandContext<ServerCommandSource> context) {
-		ServerCommandSource source = context.getSource();
-
-		List<String> lines = new ArrayList<String>();
-
-		for (Field field : Config.class.getFields()) {
-			String value = "(null)";
-			try {
-				value = field.get(null).toString();
-			} catch (Exception e) {
-			}
-			if (!field.getName().equals("configClass"))
-				lines.add(field.getName() + ": " + value);
-		}
-
-		source.sendMessage(Text.of(String.join("\n", lines)));
-
-		return Command.SINGLE_SUCCESS;
-	}
+        return Command.SINGLE_SUCCESS;
+    }
 }

@@ -1,14 +1,14 @@
 package natte.re_search.config;
 
+import java.lang.reflect.Modifier;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import natte.re_search.RegexSearch;
-import net.fabricmc.loader.api.FabricLoader;
-
-import java.lang.reflect.Modifier;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import net.neoforged.fml.loading.FMLPaths;
 
 public abstract class ConfigManager {
 
@@ -26,7 +26,7 @@ public abstract class ConfigManager {
     }
 
     public static void read() {
-        path = FabricLoader.getInstance().getConfigDir().resolve(RegexSearch.MOD_ID + ".json");
+        path = FMLPaths.CONFIGDIR.get().resolve(RegexSearch.MOD_ID + ".json");
         try {
             gson.fromJson(Files.newBufferedReader(path), configClass);
         } catch (Exception e) {
@@ -34,11 +34,15 @@ public abstract class ConfigManager {
         }
     }
 
-    public static void write() {;
-        path = FabricLoader.getInstance().getConfigDir().resolve(RegexSearch.MOD_ID + ".json");
+    public static void write() {
+        path = FMLPaths.CONFIGDIR.get().resolve(RegexSearch.MOD_ID + ".json");
         try {
-            if (!Files.exists(path))
+            if (!Files.exists(path.getParent())) {
+                Files.createDirectories(path.getParent());
+            }
+            if (!Files.exists(path)) {
                 Files.createFile(path);
+            }
 
             Files.write(path, gson.toJson(configClass.getDeclaredConstructor().newInstance()).getBytes());
         } catch (Exception e) {

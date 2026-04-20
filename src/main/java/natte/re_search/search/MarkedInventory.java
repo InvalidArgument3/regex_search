@@ -5,8 +5,8 @@ import java.util.List;
 
 import org.joml.Vector4f;
 
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.item.ItemStack;
 
 public class MarkedInventory {
     

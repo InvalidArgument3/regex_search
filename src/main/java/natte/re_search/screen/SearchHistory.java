@@ -7,7 +7,7 @@ public class SearchHistory {
 
     private final List<String> searchHistory;
     private int historyIndex;
-    private int historySize;
+    private final int historySize;
 
     public SearchHistory(int historySize) {
         this.searchHistory = new ArrayList<>();
@@ -19,7 +19,7 @@ public class SearchHistory {
         if (searchHistory.isEmpty()) {
             return "";
         }
-        if(historyIndex >= searchHistory.size()){
+        if (historyIndex >= searchHistory.size()) {
             return "";
         }
         return searchHistory.get(historyIndex);
@@ -40,15 +40,16 @@ public class SearchHistory {
         return "";
     }
 
-    public void add(String string){
+    public void add(String string) {
         searchHistory.add(string);
         historyIndex += 1;
-        if(searchHistory.size() > historySize){
+        if (searchHistory.size() > historySize) {
             searchHistory.remove(0);
             historyIndex -= 1;
         }
     }
-    public void resetPosition(){
+
+    public void resetPosition() {
         historyIndex = searchHistory.size();
     }
 }

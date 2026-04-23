@@ -8,6 +8,7 @@ import net.natte.regex_search.client.config.ClientConfig;
 import net.natte.regex_search.client.config.ConfigScreen;
 import net.natte.regex_search.client.render.HighlightRenderer;
 import net.natte.regex_search.client.screen.SearchScreen;
+import net.natte.regex_search.network.ItemSearchResultPacketS2C;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.IEventBus;
@@ -34,6 +35,8 @@ public class RegexSearchClient {
     private static final KeyMapping openSearchScreenKeyBind = new KeyMapping("key.regex_search.search", KeyConflictContext.IN_GAME, InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_Y, "category.regex_search.keybinds");
 
     public RegexSearchClient(IEventBus modBus, ModContainer modContainer) {
+
+        ItemSearchResultPacketS2C.setClientReceiver(HighlightRenderer::setMarkedInventories);
 
         modBus.addListener(this::registerKeyBinds);
 
